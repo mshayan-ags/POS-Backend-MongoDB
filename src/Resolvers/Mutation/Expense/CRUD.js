@@ -1,11 +1,7 @@
 
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
-
 async function CreateExpense(parent, args, context, info) {
 	try {
-		const { userId, Role, adminId } = context;
+		const { userId, Role, adminId, prisma } = context;
 		if (!userId) {
 			throw new Error("You must be Logged in");
 		}
@@ -43,7 +39,6 @@ async function CreateExpense(parent, args, context, info) {
 			message: "Expense Received successfully..."
 		};
 	} catch (e) {
-		console.log(e)
 		return {
 			success: false,
 			message: "Expense did'nt Received ...",
@@ -54,7 +49,7 @@ async function CreateExpense(parent, args, context, info) {
 
 async function UpdateExpense(parent, args, context, info) {
 	try {
-		const { adminId , Role } = context;
+		const { adminId, Role, prisma } = context;
 		if (!adminId && Role!== "Admin") {
 			throw new Error("You must be Logged in");
 		} else if (adminId && Role == "Admin") {
@@ -88,7 +83,7 @@ async function UpdateExpense(parent, args, context, info) {
 
 async function DeleteExpense(parent, args, context, info) {
 	try {
-		const { adminId, Role } = context;
+		const { adminId, Role, prisma } = context;
 		if (!adminId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
 		} else if (adminId && Role == "Admin") {

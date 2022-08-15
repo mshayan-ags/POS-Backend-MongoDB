@@ -4,7 +4,6 @@ const EmailValidator = require('email-deep-validator');
 async function emailVerification(email, type) {
   const emailValidator = new EmailValidator();
   const { wellFormed, validDomain, validMailbox } = await emailValidator.verify(email); // { wellFormed, validDomain, validMailbox } Booleans
-  console.log(wellFormed, validDomain, validMailbox)
   if (type == "user" ? (wellFormed && validDomain) : (wellFormed && validDomain && validMailbox)) return Promise.resolve(true);
   else return Promise.resolve(false);
 }

@@ -1,15 +1,9 @@
 
 const { QuantityTotal, CalculateCustomerBalance } = require("../../../utils/Calculate");
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
 
 async function CreateSale(parent, args, context, info) {
 	try {
-		// await prisma.saleOfProduct.deleteMany();
-		// await prisma.sale.deleteMany();
-
-		const { userId, Role, adminId } = context;
+		const { userId, Role, adminId, prisma } = context;
 		if (!userId) {
 			throw new Error("You must be Logged in");
 		}
@@ -25,34 +19,6 @@ async function CreateSale(parent, args, context, info) {
 							id: args.customerId
 						}
 					},
-				},
-				Product: {
-					create: [
-						...Products.map((pro) => {
-							return {
-								Products: {
-									connect: {
-										id: pro.ProductId
-									}
-								},
-								Admin: {
-									connect: {
-										id: adminId
-									}
-								},
-								...(Role == "User"
-									&& {
-									User: {
-										connect: {
-											id: userId
-										}
-									},
-								}),
-								TotalQuantity: pro.ProductQuantity,
-								price: pro.Price
-							};
-						})
-					]
 				},
 				Admin: {
 					connect: {
@@ -70,10 +36,43 @@ async function CreateSale(parent, args, context, info) {
 			}
 		});
 
+		Products.map(async (pro) => {
+			await prisma.saleOfProduct.create({
+				data: {
+					SaleId_ProductId: `${Sale.id}_${pro.ProductId}`,
+					Products: {
+						connect: {
+							id: pro.ProductId
+						}
+					},
+					Sale: {
+						connect: {
+							id: Sale.id
+						}
+					},
+					Admin: {
+						connect: {
+							id: adminId
+						}
+					},
+					...(Role == "User"
+						&& {
+						User: {
+							connect: {
+								id: userId
+							}
+						},
+					}),
+					TotalQuantity: pro.ProductQuantity,
+					price: pro.Price
+				}
+			});
+		});
+
 		// Calculate Total
 		const Total = await QuantityTotal(Products);
 		const Discount = Total - args.discount;
-	
+
 		await prisma.sale.update({
 			where: {
 				id: Sale.id
@@ -129,7 +128,7 @@ async function UpdateSale(parent, args, context, info) {
 		// await prisma.saleOfProduct.deleteMany();
 		// await prisma.sale.deleteMany();
 
-		const { userId, adminId, Role } = context;
+		const { userId, adminId, Role, prisma } = context;
 
 		if (!adminId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
@@ -155,17 +154,9 @@ async function UpdateSale(parent, args, context, info) {
 			Products.map(async (pro) => {
 				await prisma.saleOfProduct.update({
 					where: {
-						SaleId_ProductId: {
-							SaleId: args.id,
-							ProductId: pro.ProductId
-						}
+						SaleId_ProductId: `${Sale.id}_${pro.ProductId}`
 					},
 					data: {
-						Products: {
-							connect: {
-								id: pro.ProductId
-							}
-						},
 						TotalQuantity: pro.ProductQuantity,
 						price: pro.Price
 					}
@@ -176,7 +167,7 @@ async function UpdateSale(parent, args, context, info) {
 			const Total = await QuantityTotal(Products);
 
 			const Discount = Total - args.discount;
-		
+
 			await prisma.sale.update({
 				where: {
 					id: Sale.id
@@ -237,7 +228,7 @@ async function DeleteSale(parent, args, context, info) {
 		// await prisma.saleOfProduct.deleteMany();
 		// await prisma.sale.deleteMany();
 
-		const { adminId, Role } = context;
+		const { adminId, Role, prisma } = context;
 		if (!adminId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
 		}
@@ -299,8 +290,6 @@ async function DeleteSale(parent, args, context, info) {
 			};
 		}
 	} catch (e) {
-		console.log(e, "Error")
-
 		return {
 			success: false,
 			message: "Sale did'nt Deleted Successfully...",
@@ -314,7 +303,7 @@ async function ReturnSale(parent, args, context, info) {
 		// await prisma.saleOfProduct.deleteMany();
 		// await prisma.sale.deleteMany();
 
-		const { userId, Role, adminId } = context;
+		const { userId, Role, adminId, prisma } = context;
 
 		if (!userId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
@@ -345,6 +334,7 @@ async function ReturnSale(parent, args, context, info) {
 			Products.map(async (pro) => {
 				await prisma.saleReturn.create({
 					data: {
+						SaleId_ProductId: `${Sale.id}_${pro.ProductId}`,
 						Products: {
 							connect: {
 								id: pro.ProductId
@@ -374,7 +364,7 @@ async function ReturnSale(parent, args, context, info) {
 			const Total = await QuantityTotal(Products);
 
 			const Discount = OldTotal - Number(Total - args.discount);
-	
+
 			await prisma.sale.update({
 				where: {
 					id: Sale.id

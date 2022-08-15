@@ -63,7 +63,7 @@ type Mutation {
 		profilePicture: Upload
 	): Status!
 	deleteAdmin(id: String!): Status!
-	changePasswordAdmin(id: String!, oldPassword: String!, newPassword: String!): Status!
+	changePasswordAdmin(oldPassword: String!, newPassword: String!): Status!
 	
 	# User
 	createUser(
@@ -83,7 +83,7 @@ type Mutation {
 		profilePicture: Upload
 	): Status!
 	deleteUser(id: String!): Status!
-	changePasswordUser(id: String!, oldPassword: String!, newPassword: String!): Status!
+	changePasswordUser(oldPassword: String!, newPassword: String!): Status!
 
 	# Customer
 	CreateCustomer(name: String!, phoneNumber: String!, initialBalance: Int): Status!
@@ -382,6 +382,7 @@ type Sale {
 }
 
 type SaleOfProduct {
+	id: String
 	Sale: Sale
 	SaleId: String
 	Products: Products
@@ -398,6 +399,7 @@ type SaleOfProduct {
 }
 
 type SaleReturn {
+	id: String
 	Sale: Sale
 	SaleId: String
 	Products: Products
@@ -432,6 +434,7 @@ type Purchase {
 }
 
 type PurchaseOfProduct {
+	id: String
 	Purchase: Purchase
 	PurchaseId: String
 	Products: Products
@@ -448,6 +451,7 @@ type PurchaseOfProduct {
 }
 
 type ReturnPurchase {
+	id: String
 	Purchase: Purchase
 	PurchaseId: String
 	Products: Products

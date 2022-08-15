@@ -46,6 +46,7 @@ const server = new ApolloServer({
 	context: ({ req }) => {
 		return {
 			...req,
+			// prisma: new PrismaClient({ datasources: { db: { url: `mongodb+srv://POS:POSPASSWORD@cluster0.ondyo.mongodb.net/${req && req.headers.authorization ? getUserId(req).adminId : "POS"}?retryWrites=true&w=majority` } } }),
 			prisma,
 			userId: req && req.headers.authorization && getUserId(req).userId,
 			Role: req && req.headers.authorization && getUserId(req).Role,

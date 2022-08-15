@@ -1,12 +1,7 @@
-
-
-const { PrismaClient } = require("@prisma/client");
 const { CalculateVendorBalance, QuantityTotal } = require("../../../utils/Calculate");
 
-const prisma = new PrismaClient();
-
 async function CreateVendor(parent, args, context, info) {
-	const { userId, adminId } = context;
+	const { userId, adminId, prisma } = context;
 	if (!userId && !adminId) {
 		throw new Error("You must be Logged in");
 	}
@@ -36,7 +31,7 @@ async function CreateVendor(parent, args, context, info) {
 }
 
 async function UpdateVendor(parent, args, context, info) {
-	const { adminId, Role } = context;
+	const { adminId, Role, prisma } = context;
 	try {
 		if (!adminId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
@@ -69,24 +64,24 @@ async function UpdateVendor(parent, args, context, info) {
 }
 
 async function DeleteVendor(parent, args, context, info) {
-	const { adminId, Role } = context;
-	if (!adminId && Role !== "Admin") {
+	const { adminId, Role, prisma } = context;
+	if (!adminId && Role != "Admin") {
 		throw new Error("You must be Logged in");
 	} else if (adminId && Role == "Admin") {
 		try {
-			const Purchase = await prisma.purchase.findMany({ where: { vendorId: args.id } });
-			await prisma.payment.deleteMany({ where: { vendorId: args.id } });
+			// const Purchase = await prisma.purchase.findMany({ where: { vendorId: args.id } });
+			// await prisma.payment.deleteMany({ where: { vendorId: args.id } });
 
-			for (let index = 0; index < Purchase.length; index++) {
-				const GetPurchase = await prisma.purchaseOfProduct.findMany({
-					where: { PurchaseId: Purchase[index].id }
-				});
-				await prisma.purchaseOfProduct.deleteMany({ where: { PurchaseId: Purchase[index].id } });
-				for (let index = 0; index < GetPurchase.length; index++) {
-					await QuantityTotal(GetPurchase[index]);
-				}
-				await prisma.purchase.delete({ where: { id: Purchase[index].id } });
-			}
+			// for (let index = 0; index < Purchase.length; index++) {
+			// 	const GetPurchase = await prisma.purchaseOfProduct.findMany({
+			// 		where: { PurchaseId: Purchase[index].id }
+			// 	});
+			// 	await prisma.purchaseOfProduct.deleteMany({ where: { PurchaseId: Purchase[index].id } });
+			// 	for (let index = 0; index < GetPurchase.length; index++) {
+			// 		await QuantityTotal(GetPurchase[index]);
+			// 	}
+			// 	await prisma.purchase.delete({ where: { id: Purchase[index].id } });
+			// }
 
 			const DeleteVendorData = await prisma.vendor.delete({
 				where: { id: args.id }

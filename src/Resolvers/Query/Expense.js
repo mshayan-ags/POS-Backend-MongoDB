@@ -1,10 +1,5 @@
-
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
-
 async function Expense(parent, args, context, info) {
-	const { adminId, userId, Role } = context;
+	const { adminId, userId, Role, prisma } = context;
 
 	return prisma.expense.findMany({
 		where: {
@@ -14,6 +9,7 @@ async function Expense(parent, args, context, info) {
 }
 
 function ExpenseInfo(parent, args, context, info) {
+	const { prisma } = context;
 	return prisma.expense.findUnique({
 		where: {
 			id: args.id

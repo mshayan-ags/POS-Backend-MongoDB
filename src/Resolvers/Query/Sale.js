@@ -1,10 +1,5 @@
-
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
-
 async function Sale(parent, args, context, info) {
-	const { adminId, userId, Role } = context;
+	const { adminId, userId, Role, prisma } = context;
 
 	return prisma.sale.findMany({
 		where: {
@@ -17,6 +12,7 @@ async function Sale(parent, args, context, info) {
 }
 
 function SaleInfo(parent, args, context, info) {
+	const { prisma } = context;
 	return prisma.sale.findUnique({
 		where: {
 			id: args.id
@@ -25,12 +21,13 @@ function SaleInfo(parent, args, context, info) {
 }
 
 async function SaleOfProduct(parent, args, context, info) {
-	const { adminId } = context;
+	const { adminId, prisma } = context;
 
 	return prisma.saleOfProduct.findMany({ where: { adminId: adminId } });
 }
 
 function SaleOfProductInfo(parent, args, context, info) {
+	const { prisma } = context;
 	return prisma.saleOfProduct.findUnique({
 		where: {
 			id: args.id

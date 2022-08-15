@@ -34,6 +34,8 @@ model Admin {
   Customers          Customer[]
   Vendor             Vendor[]
   User               User[]
+  profilePicture     Attachment[]
+  attachmentFilename String?
   Expense            Expense[]
   Payment            Payment[]
   Products           Products[]
@@ -146,7 +148,8 @@ model Sale {
 }
 
 model SaleOfProduct {
-  SaleId_ProductId String   @id @default(auto()) @map("_id") @db.ObjectId
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  SaleId_ProductId String   @unique()
   Sale             Sale     @relation(fields: [SaleId], references: [id])
   SaleId           String // relation scalar field (used in the `@relation` attribute above)
   Products         Products @relation(fields: [ProductId], references: [id])
@@ -164,7 +167,8 @@ model SaleOfProduct {
 }
 
 model SaleReturn {
-  SaleId_ProductId String   @id @default(auto()) @map("_id") @db.ObjectId
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  SaleId_ProductId String   @unique()
   Sale             Sale     @relation(fields: [SaleId], references: [id])
   SaleId           String // relation scalar field (used in the `@relation` attribute above)
   Products         Products @relation(fields: [ProductId], references: [id])
@@ -200,7 +204,8 @@ model Purchase {
 }
 
 model PurchaseOfProduct {
-  PurchaseId_ProductId String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  PurchaseId_ProductId String   @unique()
   Purchase             Purchase @relation(fields: [PurchaseId], references: [id])
   PurchaseId           String // relation scalar field (used in the `@relation` attribute above)
   Products             Products @relation(fields: [ProductId], references: [id])
@@ -217,7 +222,8 @@ model PurchaseOfProduct {
 }
 
 model ReturnPurchase {
-  PurchaseId_ProductId String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  PurchaseId_ProductId String   @unique()
   Purchase             Purchase @relation(fields: [PurchaseId], references: [id])
   PurchaseId           String // relation scalar field (used in the `@relation` attribute above)
   Products             Products @relation(fields: [ProductId], references: [id])
@@ -274,6 +280,8 @@ model Attachment {
   Products   Products? @relation(fields: [productsId], references: [id])
   productsId String?
   User       User?
+  Admin      Admin?    @relation(fields: [adminId], references: [id])
+  adminId    String?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 }

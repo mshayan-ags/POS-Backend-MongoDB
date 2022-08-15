@@ -1,10 +1,5 @@
-
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
-
 async function Accounts(parent, args, context, info) {
-	const { adminId, Role, userId } = context;
+	const { adminId, Role, userId, prisma } = context;
 
 	return await prisma.accounts.findMany({
 		where: {
@@ -21,6 +16,7 @@ async function Accounts(parent, args, context, info) {
 }
 
 function AccountInfo(parent, args, context, info) {
+	const { prisma } = context;
 	return prisma.accounts.findUnique({
 		where: {
 			id: args.id

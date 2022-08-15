@@ -1,22 +1,20 @@
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
-
 function Sale(parent, args, context) {
+	const { prisma } = context;
 	return prisma.saleReturn
 		.findUnique({
 			where: {
-				SaleId_ProductId: { ProductId: parent.ProductId, SaleId: parent.SaleId }
+				SaleId_ProductId: `${parent.SaleId}_${parent.ProductId}`
 			},
 			select: { Sale: true }
 		})
 		.Sale();
 }
 function Products(parent, args, context) {
+	const { prisma } = context;
 	return prisma.saleReturn
 		.findUnique({
 			where: {
-				SaleId_ProductId: { ProductId: parent.ProductId, SaleId: parent.SaleId }
+				SaleId_ProductId: `${parent.SaleId}_${parent.ProductId}`
 			},
 			select: { Products: true }
 		})
@@ -24,10 +22,11 @@ function Products(parent, args, context) {
 }
 
 function User(parent, args, context) {
+	const { prisma } = context;
 	return prisma.saleReturn
 		.findUnique({
 			where: {
-				SaleId_ProductId: { ProductId: parent.ProductId, SaleId: parent.SaleId }
+				SaleId_ProductId: `${parent.SaleId}_${parent.ProductId}`
 			},
 			select: { User: true }
 		})
@@ -35,10 +34,11 @@ function User(parent, args, context) {
 }
 
 function Admin(parent, args, context) {
+	const { prisma } = context;
 	return prisma.saleReturn
 		.findUnique({
 			where: {
-				SaleId_ProductId: { ProductId: parent.ProductId, SaleId: parent.SaleId }
+				SaleId_ProductId: `${parent.SaleId}_${parent.ProductId}`
 			},
 			select: { Admin: true }
 		})

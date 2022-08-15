@@ -2,12 +2,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { APP_SECRET } = require("../../../utils");
 
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
-
 async function signUpSuperAdmin(parent, args, context, info) {
 	try {
+		const { prisma } = context;
 		// 1
 		const password = await bcrypt.hash(args.password, 15);
 
@@ -33,6 +30,7 @@ async function signUpSuperAdmin(parent, args, context, info) {
 
 async function loginSuperAdmin(parent, args, context, info) {
 	try {
+		const { prisma } = context;
 		// 1
 		const SuperAdmin = await prisma.superAdmin.findUnique({ where: { email: args.email } });
 		if (!SuperAdmin) {

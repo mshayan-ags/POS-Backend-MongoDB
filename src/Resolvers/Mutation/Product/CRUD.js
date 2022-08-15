@@ -1,13 +1,8 @@
-
 const { saveImage } = require("../../../utils");
-
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
 
 async function CreateProduct(parent, args, context, info) {
 	try {
-		const { userId, adminId } = context;
+		const { userId, adminId, prisma } = context;
 		if (!userId) {
 			throw new Error("You must be Logged in");
 		}
@@ -62,9 +57,9 @@ async function CreateProduct(parent, args, context, info) {
 }
 
 async function UpdateProduct(parent, args, context, info) {
-	const { userId } = context;
+	const { userId, Role, prisma } = context;
 	try {
-		if (!userId) {
+		if (!userId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
 		}
 		else {
@@ -79,10 +74,13 @@ async function UpdateProduct(parent, args, context, info) {
 				)
 				: ProductData.image;
 
+			const Data = { ...args }
+			delete Data.id
+
 			await prisma.products.update({
 				where: { id: args.id },
 				data: {
-					...args,
+					...Data,
 					...(args.image
 						? {
 							image: {
@@ -107,6 +105,7 @@ async function UpdateProduct(parent, args, context, info) {
 			};
 		}
 	} catch (e) {
+		console.log(e)
 		return {
 			success: false,
 			message: "Product did'nt Updated...",
@@ -116,7 +115,7 @@ async function UpdateProduct(parent, args, context, info) {
 }
 
 async function DeleteProduct(parent, args, context, info) {
-	const { adminId, Role } = context;
+	const { adminId, Role, prisma } = context;
 	try {
 		if (!adminId && Role !== "Admin") {
 			throw new Error("You must be Logged in");

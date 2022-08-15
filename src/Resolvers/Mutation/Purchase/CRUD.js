@@ -1,16 +1,12 @@
 
 const { QuantityTotal, CalculateVendorBalance } = require("../../../utils/Calculate");
 
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
-
 async function CreatePurchase(parent, args, context, info) {
 	try {
 		// await prisma.purchaseOfProduct.deleteMany();
 		// await prisma.purchase.deleteMany();
 
-		const { userId, Role, adminId } = context;
+		const { userId, Role, adminId, prisma } = context;
 		if (!userId) {
 			throw new Error("You must be Logged in");
 		}
@@ -27,34 +23,6 @@ async function CreatePurchase(parent, args, context, info) {
 							id: args.vendorId
 						}
 					},
-					Product: {
-						create: [
-							...Products.map((pro) => {
-								return {
-									Products: {
-										connect: {
-											id: pro.ProductId
-										}
-									},
-									Admin: {
-										connect: {
-											id: adminId
-										}
-									},
-									...(Role == "User"
-										&& {
-										User: {
-											connect: {
-												id: userId
-											}
-										},
-									}),
-									Quantity: pro.ProductQuantity,
-									price: pro.Price
-								};
-							})
-						]
-					},
 					Admin: {
 						connect: {
 							id: adminId
@@ -70,6 +38,41 @@ async function CreatePurchase(parent, args, context, info) {
 					}),
 				}
 			});
+
+
+			Products.map(async (pro) => {
+				await prisma.purchaseOfProduct.create({
+					data: {
+						PurchaseId_ProductId: `${Purchase.id}_${pro.ProductId}`,
+						Products: {
+							connect: {
+								id: pro.ProductId
+							}
+						},
+						Purchase:{
+							connect: {
+								id: Purchase.id
+							}
+						},
+						Admin: {
+							connect: {
+								id: adminId
+							}
+						},
+						...(Role == "User"
+							&& {
+							User: {
+								connect: {
+									id: userId
+								}
+							},
+						}),
+						Quantity: pro.ProductQuantity,
+						price: pro.Price
+					}
+				});
+			});
+
 
 			// Calculate Total
 			const Total = await QuantityTotal(Products);
@@ -120,7 +123,7 @@ async function UpdatePurchase(parent, args, context, info) {
 		// await prisma.purchaseOfProduct.deleteMany();
 		// await prisma.purchase.deleteMany();
 
-		const { Role, adminId } = context;
+		const { Role, adminId, prisma } = context;
 
 		if (!adminId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
@@ -145,17 +148,9 @@ async function UpdatePurchase(parent, args, context, info) {
 			Products.map(async (pro) => {
 				await prisma.purchaseOfProduct.update({
 					where: {
-						PurchaseId_ProductId: {
-							PurchaseId: args.id,
-							ProductId: pro.ProductId
-						}
+						PurchaseId_ProductId: `${Purchase.id}_${pro.ProductId}`
 					},
 					data: {
-						Products: {
-							connect: {
-								id: pro.ProductId
-							}
-						},
 						Quantity: pro.ProductQuantity,
 						price: pro.Price
 					}
@@ -216,7 +211,7 @@ async function DeletePurchase(parent, args, context, info) {
 		// await prisma.purchaseOfProduct.deleteMany();
 		// await prisma.purchase.deleteMany();
 
-		const { adminId, Role } = context;
+		const { adminId, Role, prisma } = context;
 		if (!adminId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
 		}
@@ -292,7 +287,7 @@ async function ReturnPurchase(parent, args, context, info) {
 		// await prisma.purchaseOfProduct.deleteMany();
 		// await prisma.purchase.deleteMany();
 
-		const { Role, adminId, userId } = context;
+		const { Role, adminId, userId, prisma } = context;
 
 		if (!adminId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
@@ -322,6 +317,7 @@ async function ReturnPurchase(parent, args, context, info) {
 			Products.map(async (pro) => {
 				await prisma.returnPurchase.create({
 					data: {
+						PurchaseId_ProductId: `${Purchase.id}_${pro.ProductId}`,
 						Products: {
 							connect: {
 								id: pro.ProductId
@@ -329,7 +325,7 @@ async function ReturnPurchase(parent, args, context, info) {
 						},
 						Purchase: {
 							connect: {
-								id: args.id
+								id: Purchase.id
 							}
 						},
 						Quantity: pro.ProductQuantity,

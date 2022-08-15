@@ -1,11 +1,7 @@
 
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
-
 async function ReceivePayment(parent, args, context, info) {
 	try {
-		const { userId, Role, adminId } = context;
+		const { userId, Role, adminId, prisma } = context;
 		if (!userId) {
 			throw new Error("You must be Logged in");
 		}
@@ -40,7 +36,7 @@ async function ReceivePayment(parent, args, context, info) {
 
 async function SendPayment(parent, args, context, info) {
 	try {
-		const { userId, Role, adminId } = context;
+		const { userId, Role, adminId, prisma } = context;
 
 		if (!userId) {
 			throw new Error("You must be Logged in");
@@ -78,11 +74,10 @@ async function SendPayment(parent, args, context, info) {
 
 async function UpdatePayment(parent, args, context, info) {
 	try {
-		const { adminId, Role } = context;
+		const { adminId, Role, prisma } = context;
 		if (!adminId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
 		} else if (adminId && Role == "Admin") {
-			console.log(args)
 			await prisma.payment.update({
 				where: {
 					id: args.id
@@ -115,7 +110,7 @@ async function UpdatePayment(parent, args, context, info) {
 
 async function DeletePayment(parent, args, context, info) {
 	try {
-		const { adminId, Role } = context;
+		const { adminId, Role, prisma } = context;
 		if (!adminId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
 		} else if (adminId && Role == "Admin") {

@@ -1,13 +1,10 @@
-const { PrismaClient } = require("@prisma/client");
 const moment = require("moment");
 
-const prisma = new PrismaClient();
-
 async function CreateAccount(parent, args, context, info) {
-  const { userId, adminId, Role } = context;
+  const { userId, adminId, Role, prisma } = context;
   try {
     if (!userId) {
-     throw new Error("You must be Logged in");
+      throw new Error("You must be Logged in");
     }
     else {
       const CurrUserID = Role == "User" ? userId : args.userId
@@ -64,10 +61,10 @@ async function CreateAccount(parent, args, context, info) {
 }
 
 async function UpdateAccount(parent, args, context, info) {
-  const { userId, adminId, Role } = context;
+  const { userId, adminId, Role, prisma } = context;
   try {
     if (!userId && !adminId) {
-     throw new Error("You must be Logged in");
+      throw new Error("You must be Logged in");
     } else if (adminId && Role == "Admin") {
       const UpdateAccount = await prisma.accounts.update({
         where: { id: args.id },
@@ -95,10 +92,10 @@ async function UpdateAccount(parent, args, context, info) {
 }
 
 async function DeleteAccount(parent, args, context, info) {
-  const { adminId, Role } = context;
+  const { adminId, Role, prisma } = context;
   try {
     if (!adminId && Role !== "Admin") {
-     throw new Error("You must be Logged in");
+      throw new Error("You must be Logged in");
     } else if (adminId && Role == "Admin") {
       const DeleteAccountData = await prisma.accounts.delete({
         where: { id: args.id }

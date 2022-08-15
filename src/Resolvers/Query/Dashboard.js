@@ -1,9 +1,6 @@
-const { PrismaClient } = require("@prisma/client");
-const moment = require("moment");
-const prisma = new PrismaClient();
 
 async function Calculation(parent, args, context, info) {
-	const { adminId, Role, userId } = context;
+	const { adminId, Role, userId, prisma } = context;
 	// Filter
 	const Filter = {
 		adminId: adminId,

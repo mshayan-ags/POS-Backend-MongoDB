@@ -1,20 +1,16 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { APP_SECRET, saveProfilePicture } = require("../../../utils");
-const { sendMail, emailVerification } = require("../../../utils/Mail");
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
+const { emailVerification } = require("../../../utils/Mail");
 
 async function createAdmin(parent, args, context, info) {
 	try {
-		const { userId, Role } = context;
+		const { userId, Role, prisma } = context;
 		if (userId && Role == "Super Admin") {
 			const isEmailExists = await prisma.admin.findMany({ where: { email: args.email } });
 			if (isEmailExists.length > 0) throw new Error('Email has already been taken');
 
 			const isEmailVerified = await emailVerification(args.email);
-			console.log(isEmailVerified)
 			if (!isEmailVerified) throw new Error('Email is not valid....');
 
 			const password = await bcrypt.hash(args.password, 15);
@@ -55,6 +51,7 @@ async function createAdmin(parent, args, context, info) {
 
 async function loginAdmin(parent, args, context, info) {
 	try {
+		const { prisma } = context;
 		// 1
 		const admin = await prisma.admin.findUnique({ where: { email: args.email } });
 		if (!admin) {
@@ -81,7 +78,7 @@ async function loginAdmin(parent, args, context, info) {
 
 async function updateAdmin(parent, args, context, info) {
 	try {
-		const { userId, Role } = context;
+		const { userId, Role, prisma } = context;
 		if (!userId && Role && Role == "User") {
 			throw new Error("You are Not Allowed For This Action");
 		} else if (userId && Role && Role !== "User") {
@@ -127,7 +124,7 @@ async function updateAdmin(parent, args, context, info) {
 
 async function deleteAdmin(parent, args, context, info) {
 	try {
-		const { userId, Role } = context;
+		const { userId, Role, prisma } = context;
 		if (!userId && Role != "Super Admin") {
 			throw new Error("You must be Logged in as Super Admin");
 		} else if (userId && Role == "Super Admin") {
@@ -154,13 +151,13 @@ async function deleteAdmin(parent, args, context, info) {
 
 async function changePasswordAdmin(parent, args, context, info) {
 	try {
-		const { adminId,userId } = context;
-		if (adminId != args.id && userId != args.id) {
+		const { adminId, userId, prisma } = context;
+		if (adminId == userId) {
 			throw new Error("You must be Logged in as Admin");
 		} else {
 			const admin = await prisma.admin.findUnique({
 				where: {
-					id: args.id
+					id: userId
 				}
 			});
 
@@ -170,7 +167,7 @@ async function changePasswordAdmin(parent, args, context, info) {
 			}
 
 			const newPassword = await bcrypt.hash(args.newPassword, 15);
-     
+
 			await prisma.admin.update({
 				where: {
 					id: args.id

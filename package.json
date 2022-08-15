@@ -11,7 +11,7 @@
 		"postup": "npm run prisma:deploy && npm run prisma:seed",
 		"prisma:format": "prisma format",
 		"preprisma:deploy": "npm run prisma:format",
-		"prisma": "prisma format && prisma migrate dev && prisma generate"
+		"prisma": "prisma format && prisma db push && prisma generate"
 	},
 	"engines": {
 		"node": "^16.14.0",

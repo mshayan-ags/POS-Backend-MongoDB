@@ -1,10 +1,7 @@
-const { PrismaClient } = require("@prisma/client");
-const { QuantityTotal, CalculateCustomerBalance } = require("../../../utils/Calculate");
-
-const prisma = new PrismaClient();
+const { CalculateCustomerBalance } = require("../../../utils/Calculate");
 
 async function CreateCustomer(parent, args, context, info) {
-	const { userId, Role, adminId } = context;
+	const { userId, prisma, adminId } = context;
 	try {
 		if (!userId) {
 			throw new Error("You must be Logged in");
@@ -38,7 +35,7 @@ async function CreateCustomer(parent, args, context, info) {
 }
 
 async function UpdateCustomer(parent, args, context, info) {
-	const { userId, adminId, Role } = context;
+	const { userId, adminId, Role, prisma } = context;
 	try {
 		if (!userId && !adminId) {
 			throw new Error("You must be Logged in");
@@ -71,24 +68,24 @@ async function UpdateCustomer(parent, args, context, info) {
 }
 
 async function DeleteCustomer(parent, args, context, info) {
-	const { adminId, Role } = context;
+	const { adminId, Role, prisma } = context;
 	try {
 		if (!adminId && Role !== "Admin") {
 			throw new Error("You must be Logged in");
 		} else if (adminId && Role == "Admin") {
-			const Sale = await prisma.sale.findMany({ where: { customerId: args.id } });
-			await prisma.payment.deleteMany({ where: { customerId: args.id } });
+			// const Sale = await prisma.sale.findMany({ where: { customerId: args.id } });
+			// await prisma.payment.deleteMany({ where: { customerId: args.id } });
 
-			for (let index = 0; index < Sale.length; index++) {
-				const GetSale = await prisma.saleOfProduct.findMany({
-					where: { SaleId: Sale[index].id }
-				});
-				await prisma.saleOfProduct.deleteMany({ where: { SaleId: Sale[index].id } });
-				for (let index = 0; index < GetSale.length; index++) {
-					await QuantityTotal(GetSale[index]);
-				}
-				await prisma.sale.delete({ where: { id: Sale[index].id } });
-			}
+			// for (let index = 0; index < Sale.length; index++) {
+			// 	const GetSale = await prisma.saleOfProduct.findMany({
+			// 		where: { SaleId: Sale[index].id }
+			// 	});
+			// 	await prisma.saleOfProduct.deleteMany({ where: { SaleId: Sale[index].id } });
+			// 	for (let index = 0; index < GetSale.length; index++) {
+			// 		await QuantityTotal(GetSale[index]);
+			// 	}
+			// 	await prisma.sale.delete({ where: { id: Sale[index].id } });
+			// }
 
 			const DeleteCustomerData = await prisma.customer.delete({
 				where: { id: args.id }
