@@ -53,12 +53,16 @@ async function UpdateExpense(parent, args, context, info) {
 		if (!adminId && Role!== "Admin") {
 			throw new Error("You must be Logged in");
 		} else if (adminId && Role == "Admin") {
+
+			const Data = { ...args }
+			delete Data.id
+
 			await prisma.expense.update({
 				where: {
 					id: args.id
 				},
 				data: {
-					...args
+					...Data
 				}
 			});
 

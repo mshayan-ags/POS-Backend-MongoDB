@@ -40,10 +40,14 @@ async function UpdateCustomer(parent, args, context, info) {
 		if (!userId && !adminId) {
 			throw new Error("You must be Logged in");
 		} else if (adminId && Role == "Admin") {
+			
+			const Data = {...args}
+			delete Data.id
+			
 			const UpdateCustomer = await prisma.customer.update({
 				where: { id: args.id },
 				data: {
-					...args
+					...Data
 				}
 			});
 

@@ -90,12 +90,18 @@ async function updateAdmin(parent, args, context, info) {
 				})
 				: undefined;
 
+			const Data = { ...args }
+			delete Data.id
+			delete Data.profilePicture
+			delete Data.password
+
+
 			await prisma.admin.update({
 				where: {
 					id: args.id
 				},
 				data: {
-					...args,
+					...Data,
 					...(args.profilePicture
 						? {
 							profilePicture: {

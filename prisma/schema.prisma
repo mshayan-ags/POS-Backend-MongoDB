@@ -274,8 +274,9 @@ model Expense {
 }
 
 model Attachment {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
   mimetype   String?
-  filename   String    @id @map("_id") @db.ObjectId
+  filename   String    @unique()
   encoding   String?
   Products   Products? @relation(fields: [productsId], references: [id])
   productsId String?

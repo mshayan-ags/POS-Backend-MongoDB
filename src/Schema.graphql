@@ -501,6 +501,7 @@ type Expense {
 	updatedAt: DateTime
 }
 type Attachment {
+	id: String
 	mimetype: String
 	filename: String
 	encoding: String

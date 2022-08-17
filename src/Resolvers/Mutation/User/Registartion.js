@@ -107,12 +107,16 @@ async function updateUser(parent, args, context, info) {
 				})
 				: null;
 
+			const Data = { ...args }
+			delete Data.id
+			delete Data.profilePicture
+
 			await prisma.user.update({
 				where: {
 					id: args.id
 				},
 				data: {
-					...args,
+					...Data,
 					...(args.profilePicture && file
 						? {
 							profilePicture: {

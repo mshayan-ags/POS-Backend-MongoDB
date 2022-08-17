@@ -37,10 +37,14 @@ async function UpdateVendor(parent, args, context, info) {
 			throw new Error("You must be Logged in");
 		}
 		else if (adminId && Role == "Admin") {
+			
+			const Data = { ...args }
+			delete Data.id
+
 			const UpdateVendor = await prisma.vendor.update({
 				where: { id: args.id },
 				data: {
-					...args
+					...Data
 				}
 			});
 
