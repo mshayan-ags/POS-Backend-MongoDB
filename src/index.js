@@ -26,6 +26,8 @@ function shutdown(signal) {
 const app = Express();
 app.use(GetImage);
 
+console.log(process.env.DATABASE_URL)
+
 const server = new ApolloServer({
 	typeDefs: fs.readFileSync(path.join(__dirname, "Schema.graphql"), "utf8"),
 	resolvers,
