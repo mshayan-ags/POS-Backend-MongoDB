@@ -39,10 +39,10 @@ async function saveImage(image, old) {
 					if (old && existsSync(`./uploads/${old}`)) unlinkSync(`./uploads/${old}`);
 					rest.filename = filename;
 
-					createReadStream()
-						.pipe(createWriteStream(path.join("./uploads", filename)))
-						.on("error", (error) => reject(new Error(error.message)))
-						.on("finish", () => resolve(rest));
+					// createReadStream()
+					// 	.pipe(createWriteStream(path.join("./uploads", filename)))
+					// 	.on("error", (error) => reject(new Error(error.message)))
+					// 	.on("finish", () => resolve(rest));
 				})
 				.catch((error) => console.error(error));
 		} catch (error) {
@@ -63,10 +63,10 @@ async function saveProfilePicture(image, old) {
 					// deleting if old file is given
 					if (old && existsSync(`./uploads/${old}`)) unlinkSync(`./uploads/${old}`);
 					rest.filename = filename;
-					createReadStream()
-						.pipe(createWriteStream(path.join("./uploads", filename)))
-						.on("error", (error) => reject(new Error(error.message)))
-						.on("finish", () => resolve(rest));
+					// createReadStream()
+					// 	.pipe(createWriteStream(path.join("./uploads", filename)))
+					// 	.on("error", (error) => reject(new Error(error.message)))
+					// 	.on("finish", () => resolve(rest));
 				})
 				.catch((error) => console.error(error));
 		} catch (error) {
