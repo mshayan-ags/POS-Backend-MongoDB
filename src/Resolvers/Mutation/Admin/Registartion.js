@@ -13,7 +13,7 @@ async function createAdmin(parent, args, context, info) {
 		const DBName = Email[0].replace(/\./g, '')
 
 		// Email Verification
-		const isEmailVerified = await emailVerification(args.email);
+		const isEmailVerified = await emailVerification({ email: args.email });
 		if (!isEmailVerified) throw new Error('Email is not valid....');
 		const isEmailExists = await prisma.admin.findMany({ where: { email: args.email } });
 		if (isEmailExists.length > 0) throw new Error('Email has already been taken');
@@ -48,7 +48,7 @@ async function createAdmin(parent, args, context, info) {
 				password
 			}
 		});
-
+		
 		await prisma.admin.create({
 			data: {
 				...args,
