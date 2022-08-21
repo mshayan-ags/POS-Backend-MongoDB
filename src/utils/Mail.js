@@ -1,10 +1,11 @@
 const nodemailer = require("nodemailer");
 const EmailValidator = require('email-deep-validator');
 
-async function emailVerification(email, type) {
+async function emailVerification({ email }) {
   const emailValidator = new EmailValidator();
   const { wellFormed, validDomain, validMailbox } = await emailValidator.verify(email); // { wellFormed, validDomain, validMailbox } Booleans
-  if (type == "user" ? (wellFormed && validDomain) : (wellFormed && validDomain && validMailbox)) return Promise.resolve(true);
+  console.log(wellFormed , validDomain , validMailbox)
+  if (wellFormed && validDomain && validMailbox) return Promise.resolve(true);
   else return Promise.resolve(false);
 }
 
@@ -14,7 +15,7 @@ async function sendMail({ ToEmail, Subject, Body }) {
   // Generate test SMTP service account from ethereal.email
   // Only needed if you don't have a real mail account for testing
   let testAccount = await nodemailer.createTestAccount();
-  console.log({ ToEmail, Subject, Body },"ToEmail, Subject, Body")
+  console.log({ ToEmail, Subject, Body }, "ToEmail, Subject, Body")
   // create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -39,7 +40,7 @@ async function sendMail({ ToEmail, Subject, Body }) {
     html: Body, // html body
   });
 
-  console.log(info,"info")
+  console.log(info, "info")
   return {
     info,
     getTestMessageUrl: nodemailer.getTestMessageUrl(info),

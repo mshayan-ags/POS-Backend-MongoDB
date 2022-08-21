@@ -1,3 +1,4 @@
+const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { APP_SECRET, saveProfilePicture } = require("../../../utils");
@@ -8,60 +9,55 @@ async function createUser(parent, args, context, info) {
 		const { adminId, Role, prisma } = context;
 		if (!adminId && Role && Role == "User") {
 			throw new Error("You must be Logged in");
-		} else if (adminId && Role && Role != "User") {
-			const numberOfUsers = await (await prisma.admin.findUnique({ where: { id: adminId } })).numberOfUser
-			const AdminUsers = await (await prisma.admin.findUnique({ where: { id: adminId } }).User()).length
-			if (numberOfUsers > AdminUsers) {
-				const isEmailExists = await prisma.user.findMany({ where: { email: args.email } });
-				if (isEmailExists.length > 0) throw new Error('Email has already been taken');
+		}
+		const numberOfUsers = await (await prisma.admin.findUnique({ where: { id: adminId } })).numberOfUser
+		const AdminUsers = await (await prisma.admin.findUnique({ where: { id: adminId } }).User()).length
+		if (numberOfUsers > AdminUsers) {
+			const isEmailExists = await prisma.user.findMany({ where: { email: args.email } });
+			if (isEmailExists.length > 0) throw new Error('Email has already been taken');
 
-				const isEmailVerified = await emailVerification(args.email, "user");
-				if (!isEmailVerified) throw new Error('Email is not valid....');
+			const isEmailVerified = await emailVerification({ email: args.email });
+			if (!isEmailVerified) throw new Error('Email is not valid....');
 
-				const password = await bcrypt.hash(args.password, 15);
-				const file = args.profilePicture
-					? await Promise.resolve(saveProfilePicture(args.profilePicture)).then(async (value) => {
-						return await value;
-					})
-					: undefined;
+			const password = await bcrypt.hash(args.password, 15);
+			const file = args.profilePicture
+				? await Promise.resolve(saveProfilePicture(args.profilePicture)).then(async (value) => {
+					return await value;
+				})
+				: undefined;
 
-				await prisma.user.create({
-					data: {
-						...args,
-						...(args.profilePicture
-							? {
-								profilePicture: {
-									create: file
-								}
+			await prisma.user.create({
+				data: {
+					...args,
+					...(args.profilePicture
+						? {
+							profilePicture: {
+								create: file
 							}
-							: false),
-						Admin: {
-							connect: {
-								id: adminId
-							}
-						},
-						password
-					}
-				});
+						}
+						: false),
+					Admin: {
+						connect: {
+							id: adminId
+						}
+					},
+					password
+				}
+			});
 
 
-				return {
-					success: true,
-					message: "Congrats User Created Succesfully"
-				};
-			}
-			else {
-				return {
-					success: false,
-					message: "Please Upgrade Package as Your Limit to Make Users has Ended"
-				};
-			}
-		} else {
 			return {
-				success: false,
-				message: "Sorry The Action You Tried Failed ..."
+				success: true,
+				message: "Congrats User Created Succesfully"
 			};
 		}
+		else {
+			return {
+				success: false,
+				message: "Please Upgrade Package as Your Limit to Make Users has Ended"
+			};
+		}
+
 	} catch (e) {
 		throw new Error(e);
 	}
@@ -69,8 +65,11 @@ async function createUser(parent, args, context, info) {
 
 async function loginUser(parent, args, context, info) {
 	try {
-		const { prisma } = context;
-		// 1
+		const Email = args.adminEmail.split("@")
+		const DBName = Email[0].replace(/\./g, '')
+
+		const prisma = new PrismaClient({ datasources: { db: { url: `${process.env.DATABASE_URL}/${DBName}?retryWrites=true&w=majority` } } })
+
 		const User = await prisma.user.findUnique({ where: { email: args.email } });
 		if (!User) {
 			throw new Error("No such User found");
@@ -82,7 +81,7 @@ async function loginUser(parent, args, context, info) {
 			throw new Error("Invalid password");
 		}
 
-		const token = jwt.sign({ userId: User.id, adminId: User.adminId, Role: "User" }, APP_SECRET);
+		const token = jwt.sign({ userId: User.id, adminId: User.adminId, Role: "User", username: DBName }, APP_SECRET);
 
 		// 3
 		return {

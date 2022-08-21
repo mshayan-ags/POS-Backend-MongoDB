@@ -15,12 +15,12 @@ function getUserId(req, authToken) {
 			if (!token) {
 				throw new Error("No token found");
 			}
-			const { userId, Role, adminId } = getTokenPayload(token);
-			return { userId: userId, Role: Role, adminId: adminId };
+			const { userId, Role, adminId, username } = getTokenPayload(token);
+			return { userId, Role, adminId, username };
 		}
 	} else if (authToken) {
-		const { userId, Role, adminId } = getTokenPayload(authToken);
-		return { userId: userId, Role: Role, adminId: adminId };
+		const { userId, Role, adminId, username } = getTokenPayload(authToken);
+		return { userId, Role, adminId, username };
 	}
 
 	throw new Error("Not authenticated");

@@ -18,7 +18,7 @@ async function CreateCustomer(parent, args, context, info) {
 				}
 			});
 
-			CalculateCustomerBalance(Customer.id);
+			CalculateCustomerBalance(Customer.id, prisma);
 
 			return {
 				success: true,
@@ -51,7 +51,7 @@ async function UpdateCustomer(parent, args, context, info) {
 				}
 			});
 
-			CalculateCustomerBalance(args.id);
+			CalculateCustomerBalance(args.id, prisma);
 
 			if (!UpdateCustomer) {
 				throw new Error("No such Customer found");

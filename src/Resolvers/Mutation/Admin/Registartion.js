@@ -1,49 +1,77 @@
+const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { APP_SECRET, saveProfilePicture } = require("../../../utils");
 const { emailVerification } = require("../../../utils/Mail");
+const { MongoClient } = require('mongodb');
 
 async function createAdmin(parent, args, context, info) {
 	try {
-		const { userId, Role, prisma } = context;
-		if (userId && Role == "Super Admin") {
-			const isEmailExists = await prisma.admin.findMany({ where: { email: args.email } });
-			if (isEmailExists.length > 0) throw new Error('Email has already been taken');
+		const { prisma } = context
 
-			const isEmailVerified = await emailVerification(args.email);
-			if (!isEmailVerified) throw new Error('Email is not valid....');
+		const Email = args.email.split("@")
+		const DBName = Email[0].replace(/\./g, '')
 
-			const password = await bcrypt.hash(args.password, 15);
-			const file = args.profilePicture
-				? await Promise.resolve(saveProfilePicture(args.profilePicture)).then(async (value) => {
-					return await value;
-				})
-				: undefined;
+		// Email Verification
+		const isEmailVerified = await emailVerification(args.email);
+		if (!isEmailVerified) throw new Error('Email is not valid....');
+		const isEmailExists = await prisma.admin.findMany({ where: { email: args.email } });
+		if (isEmailExists.length > 0) throw new Error('Email has already been taken');
+		const isUserNameExists = await prisma.admin.findMany({ where: { username: DBName } });
+		if (isUserNameExists.length > 0) throw new Error('Email has already been taken');
 
-			const admin = await prisma.admin.create({
-				data: {
-					...args,
-					...(args.profilePicture
-						? {
-							profilePicture: {
-								create: file
-							}
+		const client = new MongoClient(process.env.DATABASE_URL);
+		const AllDataBases = await (await client.db().admin({ listDatabases: 1 }).listDatabases()).databases.filter((db) => db.name.toLowerCase() == DBName.toLowerCase())
+		if (AllDataBases.length > 0) throw new Error('Please Try With Another Email as Email has already been taken');
+
+		const prismaAdminDB = new PrismaClient({ datasources: { db: { url: `${process.env.DATABASE_URL}/${DBName}?retryWrites=true&w=majority` } } })
+
+		const password = await bcrypt.hash(args.password, 15);
+		const file = args.profilePicture
+			? await Promise.resolve(saveProfilePicture(args.profilePicture)).then(async (value) => {
+				return await value;
+			})
+			: undefined;
+
+
+		const admin = await prismaAdminDB.admin.create({
+			data: {
+				...args,
+				username: DBName,
+				...(args.profilePicture
+					? {
+						profilePicture: {
+							create: file
 						}
-						: false),
-					password
-				}
-			});
+					}
+					: false),
+				password
+			}
+		});
 
-			// 3
-			const token = jwt.sign({ userId: admin.id, adminId: admin.id, Role: "Admin" }, APP_SECRET)
-			// 4
-			return {
-				token,
-				admin
-			};
-		} else {
-			throw new Error("Super Admin must be Logged in");
-		}
+		await prisma.admin.create({
+			data: {
+				...args,
+				username: DBName,
+				...(args.profilePicture
+					? {
+						profilePicture: {
+							create: file
+						}
+					}
+					: false),
+				password
+			}
+		});
+
+
+		// 3
+		const token = jwt.sign({ userId: admin.id, adminId: admin.id, Role: "Admin", username: DBName }, APP_SECRET)
+		// 4
+		return {
+			token,
+			admin
+		};
 	} catch (e) {
 		throw new Error(e);
 	}
@@ -51,9 +79,12 @@ async function createAdmin(parent, args, context, info) {
 
 async function loginAdmin(parent, args, context, info) {
 	try {
-		const { prisma } = context;
-		// 1
-		const admin = await prisma.admin.findUnique({ where: { email: args.email } });
+		const Email = args.email.split("@")
+		const DBName = Email[0].replace(/\./g, '')
+
+		const prismaAdminDB = new PrismaClient({ datasources: { db: { url: `${process.env.DATABASE_URL}/${DBName}?retryWrites=true&w=majority` } } })
+
+		const admin = await prismaAdminDB.admin.findUnique({ where: { email: args.email } });
 		if (!admin) {
 			throw new Error("No such admin found");
 		}
@@ -64,7 +95,7 @@ async function loginAdmin(parent, args, context, info) {
 			throw new Error("Invalid password");
 		}
 
-		const token = jwt.sign({ userId: admin.id, adminId: admin.id, Role: "Admin" }, APP_SECRET);
+		const token = jwt.sign({ userId: admin.id, adminId: admin.id, Role: "Admin", username: DBName }, APP_SECRET);
 
 		// 3
 		return {
@@ -78,51 +109,40 @@ async function loginAdmin(parent, args, context, info) {
 
 async function updateAdmin(parent, args, context, info) {
 	try {
-		const { userId, Role, prisma } = context;
-		if (!userId && Role && Role == "User") {
+		const { userId, adminId, Role, prisma } = context;
+		if (!userId && userId !== adminId && Role == "User") {
 			throw new Error("You are Not Allowed For This Action");
-		} else if (userId && Role && Role !== "User") {
-			// 1
-			const password = await bcrypt.hash(args.password, 15);
-			const file = args.profilePicture
-				? await Promise.resolve(saveProfilePicture(args.profilePicture)).then(async (value) => {
-					return await value;
-				})
-				: undefined;
-
-			const Data = { ...args }
-			delete Data.id
-			delete Data.profilePicture
-			delete Data.password
-
-
-			await prisma.admin.update({
-				where: {
-					id: args.id
-				},
-				data: {
-					...Data,
-					...(args.profilePicture
-						? {
-							profilePicture: {
-								create: file
-							}
-						}
-						: false),
-					password
-				}
-			});
-
-			return {
-				success: true,
-				message: "Admin Updated Successfully ..."
-			};
-		} else {
-			return {
-				success: false,
-				message: "Sorry The Action You Tried Failed ..."
-			};
 		}
+
+		const file = args.profilePicture
+			? await Promise.resolve(saveProfilePicture(args.profilePicture)).then(async (value) => {
+				return await value;
+			})
+			: undefined;
+
+		const Data = { ...args }
+		delete Data.profilePicture
+
+		await prisma.admin.update({
+			where: {
+				id: userId
+			},
+			data: {
+				...Data,
+				...(args.profilePicture
+					? {
+						profilePicture: {
+							create: file
+						}
+					}
+					: false),
+			}
+		});
+
+		return {
+			success: true,
+			message: "Admin Updated Successfully ..."
+		};
 	} catch (e) {
 		throw new Error(e);
 	}

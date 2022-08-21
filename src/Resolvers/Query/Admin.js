@@ -1,6 +1,4 @@
 
-const { PrismaClient } = require("@prisma/client");
-
 function Admin(parent, args, context, info) {
 	const { prisma } = context;
 	return prisma.admin.findMany();

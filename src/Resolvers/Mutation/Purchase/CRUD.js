@@ -75,7 +75,7 @@ async function CreatePurchase(parent, args, context, info) {
 
 
 			// Calculate Total
-			const Total = await QuantityTotal(Products);
+			const Total = await QuantityTotal(Products,prisma);
 			const Discount = Total - args.discount;
 			
 			await prisma.purchase.update({
@@ -102,7 +102,7 @@ async function CreatePurchase(parent, args, context, info) {
 					}
 				});
 			}
-			CalculateVendorBalance(args.vendorId);
+			CalculateVendorBalance(args.vendorId, prisma);
 
 			return {
 				success: true,
@@ -158,7 +158,7 @@ async function UpdatePurchase(parent, args, context, info) {
 			});
 
 			// Calculate Total
-			const Total = await QuantityTotal(Products);
+			const Total = await QuantityTotal(Products, prisma);
 
 			const Discount = Total - args.discount;
 			await prisma.purchase.update({
@@ -185,7 +185,7 @@ async function UpdatePurchase(parent, args, context, info) {
 					}
 				});
 			}
-			CalculateVendorBalance(args.vendorId);
+			CalculateVendorBalance(args.vendorId, prisma);
 
 			return {
 				success: true,
@@ -260,8 +260,8 @@ async function DeletePurchase(parent, args, context, info) {
 				}
 			})
 
-			await QuantityTotal(OBJ.GetProduct);
-			await CalculateVendorBalance(VendorId);
+			await QuantityTotal(OBJ.GetProduct, prisma);
+			await CalculateVendorBalance(VendorId, prisma);
 
 			return {
 				success: true,
@@ -344,7 +344,7 @@ async function ReturnPurchase(parent, args, context, info) {
 
 			// Calculate Total
 			const OldTotal = GetPurchase.total;
-			const Total = await QuantityTotal(Products);
+			const Total = await QuantityTotal(Products, prisma);
 
 			const Discount = OldTotal - Number(Total - args.discount);
 		
@@ -372,7 +372,7 @@ async function ReturnPurchase(parent, args, context, info) {
 					}
 				});
 			}
-			CalculateVendorBalance(args.vendorId);
+			CalculateVendorBalance(args.vendorId, prisma);
 
 			return {
 				success: true,

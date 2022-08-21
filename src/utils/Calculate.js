@@ -1,8 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
 
-const prisma = new PrismaClient();
-
-async function QuantityTotal(Products) {
+async function QuantityTotal(Products, prisma) {
 	const AllProducts = [];
 	let Total = 0;
 	const CalculateLength = [];
@@ -59,7 +56,7 @@ async function QuantityTotal(Products) {
 	}
 }
 
-async function CalculateVendorBalance(VendorID) {
+async function CalculateVendorBalance(VendorID, prisma) {
 	const Payments = await prisma.payment.findMany({ where: { vendorId: VendorID } })
 	const Purchase = await prisma.purchase.findMany({ where: { vendorId: VendorID } });
 	const Vendor = await prisma.vendor.findUnique({ where: { id: VendorID } });
@@ -85,7 +82,7 @@ async function CalculateVendorBalance(VendorID) {
 	});
 }
 
-async function CalculateCustomerBalance(customerID) {
+async function CalculateCustomerBalance(customerID, prisma) {
 	const Payments = await prisma.payment.findMany({ where: { customerId: customerID } })
 	const Sale = await prisma.sale.findMany({ where: { customerId: customerID } });
 	const Customer = await prisma.customer.findUnique({ where: { id: customerID } });

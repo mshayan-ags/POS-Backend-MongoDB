@@ -23,8 +23,9 @@ model SuperAdmin {
 
 model Admin {
   id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  username           String              @unique()
   name               String
-  email              String              @unique
+  email              String              @unique()
   password           String
   numberOfUser       Int                 @default(1)
   Sale               Sale[]
@@ -51,7 +52,7 @@ model User {
   id                 String              @id @default(auto()) @map("_id") @db.ObjectId
   name               String
   Role               UserType            @default(User)
-  email              String              @unique
+  email              String              @unique()
   password           String
   ProductsSaled      SaleOfProduct[]
   ProductsPurchased  PurchaseOfProduct[]

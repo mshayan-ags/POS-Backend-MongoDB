@@ -16,7 +16,7 @@ async function CreateVendor(parent, args, context, info) {
 				}
 			}
 		});
-		CalculateVendorBalance(Vendor.id);
+		CalculateVendorBalance(Vendor.id, prisma);
 		return {
 			success: true,
 			message: "Vendor Created Succesfully..."
@@ -48,7 +48,7 @@ async function UpdateVendor(parent, args, context, info) {
 				}
 			});
 
-			CalculateVendorBalance(args.id);
+			CalculateVendorBalance(args.id, prisma);
 			if (!UpdateVendor) {
 				throw new Error("No such Vendor found");
 			}

@@ -8,7 +8,6 @@ const { GraphQLUpload } = require("graphql-upload");
 const Express = require("express");
 const resolvers = require("./Resolvers/index.js");
 const { GetImage } = require("./Express/file");
-const { sendMail } = require("./utils/Mail");
 
 process
 	.on("SIGTERM", shutdown("SIGTERM"))
@@ -25,16 +24,7 @@ function shutdown(signal) {
 	};
 }
 const app = Express();
-const prisma = new PrismaClient();
-
 app.use(GetImage);
-
-// async function Test() {
-	
-// 	console.log(await sendMail({Body:"<h1>Test</h1>",Subject:"Test",ToEmail:"mshayan.ags@gmail.com"}),"Test")
-// }
-
-// Test()
 
 const server = new ApolloServer({
 	typeDefs: fs.readFileSync(path.join(__dirname, "Schema.graphql"), "utf8"),
@@ -46,8 +36,16 @@ const server = new ApolloServer({
 	context: ({ req }) => {
 		return {
 			...req,
-			// prisma: new PrismaClient({ datasources: { db: { url: `mongodb+srv://POS:POSPASSWORD@cluster0.ondyo.mongodb.net/${req && req.headers.authorization ? getUserId(req).adminId : "POS"}?retryWrites=true&w=majority` } } }),
-			prisma,
+			prisma: new PrismaClient({
+				datasources: {
+					db: {
+						url:
+							req && req.headers.authorization
+								? `${process.env.DATABASE_URL}/${getUserId(req).username}?retryWrites=true&w=majority`
+								: `${process.env.DATABASE_URL}/POS?retryWrites=true&w=majority`
+					}
+				}
+			}),
 			userId: req && req.headers.authorization && getUserId(req).userId,
 			Role: req && req.headers.authorization && getUserId(req).Role,
 			adminId: req && req.headers.authorization && getUserId(req).adminId
