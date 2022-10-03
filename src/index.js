@@ -40,7 +40,7 @@ const server = new ApolloServer({
 				datasources: {
 					db: {
 						url:
-							req && req.headers.authorization
+							req && req.headers.authorization && getUserId(req)?.username
 								? `${process.env.DATABASE_URL}/${getUserId(req).username}?retryWrites=true&w=majority`
 								: `${process.env.DATABASE_URL}/POS?retryWrites=true&w=majority`
 					}
