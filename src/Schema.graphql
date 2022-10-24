@@ -271,7 +271,7 @@ type Admin {
 	Customers: [Customer]
 	Vendor: [Vendor]
 	User: [User]
-	profilePicture: Attachment
+	profilePicture: [Attachment]
 	attachmentFilename: String
 	Expense: [Expense]
 	Payment: [Payment]
@@ -292,7 +292,7 @@ type User {
 	password: String
 	ProductsSaled: [SaleOfProduct]
 	ProductsPurchased: [PurchaseOfProduct]
-	profilePicture: Attachment
+	profilePicture: [Attachment]
 	attachmentFilename: String
 	Admin: Admin
 	adminId: String

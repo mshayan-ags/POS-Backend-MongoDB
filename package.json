@@ -13,20 +13,15 @@
 		"preprisma:deploy": "npm run prisma:format",
 		"prisma": "prisma format && prisma db push && prisma generate"
 	},
-	"engines": {
-		"node": "^16.14.0",
-		"npm": "^8.3.0"
-	},
-	"resolutions": {
-		"**/**/fs-capacitor": "^6.2.0",
-		"**/graphql-upload": "^11.0.0"
-	},
-	"author": "",
+"resolutions": {
+	"**/**/fs-capacitor": "^6.2.0",
+	"**/graphql-upload": "^11.0.0"
+},	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"@prisma/client": "^4.4.0",
-		"apollo-server": "^2.25.1",
-		"apollo-server-express": "^2.25.2",
+		"@prisma/client": "^4.5.0",
+		"apollo-server": "^3.10.3",
+		"apollo-server-express": "^3.10.3",
 		"apollo-server-hapi": "^2.9.7",
 		"bcryptjs": "^2.4.3",
 		"cloudinary": "^1.27.1",
@@ -36,7 +31,6 @@
 		"graphql": "^15.5.0",
 		"graphql-scalars": "^1.13.6",
 		"graphql-tools": "^8.2.0",
-		"graphql-upload": "^11.0.0",
 		"hapi": "^18.1.0",
 		"http": "^0.0.1-security",
 		"inert": "^2.0.0",
@@ -45,10 +39,10 @@
 		"mongodb": "^4.9.0",
 		"nodemailer": "^6.7.8",
 		"path": "^0.12.7",
-		"prisma": "^4.4.0"
+		"graphql-upload": "^11.0.0"
 	},
 	"devDependencies": {
 		"nodemon": "^2.0.19",
-		"prisma": "^4.2.1"
+		"prisma": "^4.5.0"
 	}
 }

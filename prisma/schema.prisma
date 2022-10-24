@@ -56,8 +56,8 @@ model User {
   password           String
   ProductsSaled      SaleOfProduct[]
   ProductsPurchased  PurchaseOfProduct[]
-  profilePicture     Attachment?         @relation(fields: [attachmentFilename], references: [filename])
-  attachmentFilename String?             @unique
+  profilePicture     Attachment[]
+  attachmentFilename String?
   Admin              Admin               @relation(fields: [adminId], references: [id])
   adminId            String
   Expense            Expense[]
@@ -281,7 +281,8 @@ model Attachment {
   encoding   String?
   Products   Products? @relation(fields: [productsId], references: [id])
   productsId String?
-  User       User?
+  User       User?     @relation(fields: [userId], references: [id])
+  userId     String?
   Admin      Admin?    @relation(fields: [adminId], references: [id])
   adminId    String?
   createdAt  DateTime  @default(now())
